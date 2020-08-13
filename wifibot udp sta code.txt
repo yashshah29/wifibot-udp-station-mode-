@@ -1,0 +1,115 @@
+#include <ESP8266WiFi.h>
+#include<WiFiUDP.h>
+
+// SSID parameters
+const char *ssid = "";                      /*Set your wifi name.*/
+const char *password = "";                  /*set password.*/
+
+
+const char *udpadd =" 192.168._._"          /*setting a static ip .*/
+const char *udpport =1234                   /*setting a port for udp comm channel .*/
+
+WiFiUDP udp;
+
+int leftMotorBackward = D1;                 /* (D1) -> IN1  */
+int leftMotorForward = D2;                  /* (D2) ->IN2   */
+int rightMotorForward = D3;                 /* (D3) -> IN3   */
+int rightMotorBackward = D4;                /* (D4) -> IN4  */
+char pktbuf[10] ;
+char a = "f";
+char b;
+void setup()
+{
+  WiFi.begin(ssid,password);                 /* connects to wifi network of name specified in ssid using password specified in password*/
+  while(WiFi.Status() != WL_CONNECTED)       /* checks if connection is established*/
+   { 
+      delay(5000);
+      ESP.restart();
+  }
+   
+  // Declaration of motors
+  pinMode(leftMotorForward, OUTPUT);
+  pinMode(rightMotorForward, OUTPUT); 
+  pinMode(leftMotorBackward, OUTPUT);  
+  pinMode(rightMotorBackward, OUTPUT);
+  udp.begin(udpport);                         /* creates UDP channel*/
+   udp.read(pktbuf,2);
+    pktbuf=b;
+  }
+
+ void loop()
+  {
+    udp.read(pktbuf,2);
+      if ( pktbuf==b && b == a)
+     { 
+       switch(pktbuf)
+        {
+          case "f":
+          forward();
+          case "b":
+          backwards();
+          case "l":
+          left();
+          case "r":
+          right();
+         }
+       }
+      if( pktbuf != b)
+        {
+         pktbuf=b;
+         b=a;
+         switch(b)
+        {
+          case "f":
+          forward();
+          case "b":
+          backwards();
+          case "l":
+          left();
+          case "r":
+          right();
+         }
+         }
+ }
+
+void forward(void)   
+{
+  digitalWrite(leftMotorForward,HIGH);
+  digitalWrite(rightMotorForward,HIGH);
+  digitalWrite(leftMotorBackward,LOW);
+  digitalWrite(rightMotorBackward,LOW);
+}
+
+/*************** BACKWARD *******************/
+void backward()   
+{
+  digitalWrite(leftMotorBackward,HIGH);
+  digitalWrite(rightMotorBackward,HIGH);
+  digitalWrite(leftMotorForward,LOW);
+  digitalWrite(rightMotorForward,LOW);
+}
+
+/*************** TURN LEFT *******************/
+void left()   
+{
+  digitalWrite(rightMotorForward,HIGH);
+  digitalWrite(leftMotorBackward,LOW);
+  digitalWrite(rightMotorBackward,LOW);
+  digitalWrite(leftMotorForward,LOW);
+}
+
+
+
+/*************** TURN RIGHT *******************/
+void right()   
+{
+  digitalWrite(leftMotorForward,HIGH);
+  digitalWrite(leftMotorBackward,LOW);
+  digitalWrite(rightMotorForward,LOW);
+  digitalWrite(rightMotorBackward,LOW);
+}
+
+      
+  
+
+
